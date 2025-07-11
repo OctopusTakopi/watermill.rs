@@ -59,10 +59,7 @@ impl<F: Float + FromPrimitive + AddAssign + SubAssign> Univariate<F> for Mean<F>
 
 impl<F: Float + FromPrimitive + AddAssign + SubAssign> Revertable<F> for Mean<F> {
     fn revert(&mut self, x: F) -> Result<(), &'static str> {
-        match self.n.revert(x) {
-            Ok(it) => it,
-            Err(err) => return Err(err),
-        };
+        self.n.revert(x)?;
 
         let count = self.n.get();
         if count == F::from_f64(0.).unwrap() {
