@@ -22,7 +22,7 @@ use std::{
 /// let data = vec![9.,7.,3.,2.,6.,1., 8., 5., 4.];
 /// let mut running_sum: Sum<f64> = Sum::new();
 /// // We wrap `running_sum` inside the `Rolling` struct.
-/// let mut rolling_sum: Rolling<_, f64> = Rolling::new(& mut running_sum, 2).unwrap();
+/// let mut rolling_sum: Rolling<_, f64> = Rolling::new(&mut running_sum, 2).unwrap();
 /// for x in data.iter(){
 ///     rolling_sum.update(*x as f64);
 /// }
@@ -45,7 +45,7 @@ where
 {
     pub fn new(to_roll: &'a mut U, window_size: usize) -> Result<Self, &'static str> {  // Optimization: &'static str for error (clearer, no lifetime tie)
         if window_size == 0 {
-            return Err("Window size should not equals to 0");
+            return Err("Window size should not equal to 0");
         }
         Ok(Self {
             to_roll,
