@@ -17,17 +17,19 @@ use crate::sum::Sum;
 use crate::variance::Variance;
 
 #[doc(hidden)]
-pub struct IterStat<I>
+pub struct IterStat<U, I>
 where
+    U: Univariate<I::Item>,
     I: Iterator,
     I::Item: Float + FromPrimitive + AddAssign + SubAssign + 'static,
 {
-    stat: Box<dyn Univariate<I::Item>>,
+    stat: U,
     underlying: I,
 }
 
-impl<I> Iterator for IterStat<I>
+impl<U, I> Iterator for IterStat<U, I>
 where
+    U: Univariate<I::Item>,
     I: Iterator,
     I::Item: Float + FromPrimitive + AddAssign + SubAssign,
 {
@@ -55,13 +57,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_sum(self) -> IterStat<Self>
+    fn online_sum(self) -> IterStat<Sum<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Sum::new()),
+            stat: Sum::new(),
             underlying: self,
         }
     }
@@ -77,13 +79,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_mean(self) -> IterStat<Self>
+    fn online_mean(self) -> IterStat<Mean<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Mean::new()),
+            stat: Mean::new(),
             underlying: self,
         }
     }
@@ -99,13 +101,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_count(self) -> IterStat<Self>
+    fn online_count(self) -> IterStat<Count<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Count::new()),
+            stat: Count::new(),
             underlying: self,
         }
     }
@@ -124,13 +126,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_ewmean(self, alpha: Self::Item) -> IterStat<Self>
+    fn online_ewmean(self, alpha: Self::Item) -> IterStat<EWMean<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(EWMean::new(alpha)),
+            stat: EWMean::new(alpha),
             underlying: self,
         }
     }
@@ -148,13 +150,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_ewvar(self, alpha: Self::Item) -> IterStat<Self>
+    fn online_ewvar(self, alpha: Self::Item) -> IterStat<EWVariance<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(EWVariance::new(alpha)),
+            stat: EWVariance::new(alpha),
             underlying: self,
         }
     }
@@ -173,13 +175,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_iqr(self, q_inf: Self::Item, q_sup: Self::Item) -> IterStat<Self>
+    fn online_iqr(self, q_inf: Self::Item, q_sup: Self::Item) -> IterStat<IQR<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(IQR::new(q_inf, q_sup).expect("q_inf must be strictly less than q_sup")),
+            stat: IQR::new(q_inf, q_sup).expect("q_inf must be strictly less than q_sup"),
             underlying: self,
         }
     }
@@ -197,13 +199,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_kurtosis(self, bias: bool) -> IterStat<Self>
+    fn online_kurtosis(self, bias: bool) -> IterStat<Kurtosis<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Kurtosis::new(bias)),
+            stat: Kurtosis::new(bias),
             underlying: self,
         }
     }
@@ -219,13 +221,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_max(self) -> IterStat<Self>
+    fn online_max(self) -> IterStat<Max<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Max::new()),
+            stat: Max::new(),
             underlying: self,
         }
     }
@@ -241,13 +243,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_abs_max(self) -> IterStat<Self>
+    fn online_abs_max(self) -> IterStat<AbsMax<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(AbsMax::new()),
+            stat: AbsMax::new(),
             underlying: self,
         }
     }
@@ -263,13 +265,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_min(self) -> IterStat<Self>
+    fn online_min(self) -> IterStat<Min<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Min::new()),
+            stat: Min::new(),
             underlying: self,
         }
     }
@@ -285,13 +287,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_ptp(self) -> IterStat<Self>
+    fn online_ptp(self) -> IterStat<PeakToPeak<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(PeakToPeak::new()),
+            stat: PeakToPeak::new(),
             underlying: self,
         }
     }
@@ -312,13 +314,13 @@ pub trait IterStatisticsExtend: Iterator {
     ///     assert_eq!(d, t);
     /// }
     /// ```
-    fn online_quantile(self, q: Self::Item) -> IterStat<Self>
+    fn online_quantile(self, q: Self::Item) -> IterStat<Quantile<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Quantile::new(q).expect("q should be betweek 0 and 1")),
+            stat: Quantile::new(q).expect("q should be between 0 and 1"),
             underlying: self,
         }
     }
@@ -336,13 +338,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_skew(self, bias: bool) -> IterStat<Self>
+    fn online_skew(self, bias: bool) -> IterStat<Skew<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Skew::new(bias)),
+            stat: Skew::new(bias),
             underlying: self,
         }
     }
@@ -360,13 +362,13 @@ pub trait IterStatisticsExtend: Iterator {
     /// }
     ///
     /// ```
-    fn online_var(self, ddof: u32) -> IterStat<Self>
+    fn online_var(self, ddof: u32) -> IterStat<Variance<Self::Item>, Self>
     where
         Self::Item: Float + FromPrimitive + AddAssign + SubAssign,
         Self: Sized,
     {
         IterStat {
-            stat: Box::new(Variance::new(ddof)),
+            stat: Variance::new(ddof),
             underlying: self,
         }
     }
